@@ -1,0 +1,62 @@
+### Set aspect-ration.
+aspect = 0
+### Set separator (for multiple widgets output).
+separate_widget = ""
+### Set tab-length (for textbox tab-conversion).
+tab_len = 0
+### Make tab-traversal for checklist, etc., include the list.
+visit_items = OFF
+### Shadow dialog boxes? This also turns on color.
+# use_shadow = ON
+### Color support
+use_colors = ON
+## Screen color
+screen_color = (GREEN,BLACK,OFF)
+### Shadow color
+# shadow_color = (BLACK,BLUE,OFF)
+### Dialog box
+dialog_color = (GREEN,BLACK,OFF)
+title_color = (YELLOW,BLACK,ON)
+border_color = (GREEN,BLACK,OFF)
+border2_color = border_color
+### Buttons
+button_active_color = (BLACK,GREEN,ON)
+button_inactive_color = (GREEN,BLACK,OFF)
+button_key_active_color = (GREEN,GREEN,ON)
+button_key_inactive_color = (MAGENTA,BLACK,OFF)
+button_label_active_color = (YELLOW,GREEN,ON)
+button_label_inactive_color = (GREEN,BLACK,OFF)
+### Input box
+# inputbox_color = (GREEN,BLACK,OFF)
+# inputbox_border_color = (GREEN,BLACK,OFF)
+# inputbox_border2_color = inputbox_border_color
+### Search
+# searchbox_color = (GREEN,BLACK,OFF)
+# searchbox_title_color = (BLUE,BLACK,ON)
+# searchbox_border_color = (WHITE,BLACK,ON)
+### File position indicator color
+position_indicator_color = (BLUE,BLACK,ON)
+### Menu box
+menubox_color = (MAGENTA,BLACK,OFF)
+menubox_border_color = (BLACK,BLACK,ON)
+menubox_border2_color = menubox_border_color
+### Items
+item_color = (GREEN,BLACK,OFF)
+item_selected_color = (GREEN,BLUE,ON)
+### Tags
+tag_color = (GREEN,BLACK,ON)
+tag_selected_color = (YELLOW,GREEN,ON)
+tag_key_color = (YELLOW,BLACK,OFF)
+# tag_key_selected_color = (RED,BLUE,ON)
+### Check box
+# check_color = (BLACK,WHITE,OFF)
+# check_selected_color = (WHITE,BLUE,ON)
+### Arrows
+# uarrow_color = (GREEN,BLACK,ON)
+# darrow_color = (GREEN,BLACK,ON)
+### Item help-text color
+# itemhelp_color = (WHITE,BLACK,OFF)
+### Form
+# form_active_text_color = (WHITE,BLUE,ON)
+# form_text_color = (WHITE,CYAN,ON)
+# form_item_readonly_color = (CYAN,BLACK,ON)

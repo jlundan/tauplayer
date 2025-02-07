@@ -121,19 +121,19 @@ ensureBash () {
 	[ "${t}" != "bash" ] && fatal "Must be run by bash instead of ${t}"
 }
 
-ensureCfg () {
-	[ -f "${DIALOGRC}" ] || fatal ".dialogrc file not found in directory!"
-	eval command -v mplayer &>/dev/null
-	[ $? -eq 0 ] && PLAYER="mplayer" || fatal "Please install required 'mplayer' first."
-	[ -d "${COLLECTION_DIR}" ] || mkdir "${COLLECTION_DIR}"
-	if [ -f "${SETTINGS}" ]; then
-		loadSettings "${SETTINGS}"
-	else # ensure tauplayer.cvs and ./collections/favorites.cvs
-		touch $(getCollectionPath "${COLLECTION1}")
-		COLLECTION="${COLLECTION1}"
-		PLAYLIST_DIR="${HOME}"
-		saveSettings
-	fi
+ensureCfg() {
+  [ -f "${DIALOGRC}" ] || fatal ".dialogrc file not found in directory!"
+  eval command -v mplayer &>/dev/null
+  [ $? -eq 0 ] && PLAYER="mplayer" || fatal "Please install required 'mplayer' first."
+  [ -d "${COLLECTION_DIR}" ] || mkdir -p "${COLLECTION_DIR}"
+  if [ -f "${SETTINGS}" ]; then
+    loadSettings "${SETTINGS}"
+  else # ensure tauplayer.cvs and ./collections/favorites.cvs
+    touch $(getCollectionPath "${COLLECTION1}")
+    COLLECTION="${COLLECTION1}"
+    PLAYLIST_DIR="${HOME}"
+    saveSettings
+  fi
 }
 
 ensureDir () { # dir
@@ -529,16 +529,22 @@ playlistMenu () {
 	fi
 }
 
-playStream () { # name url
-	local code hint
-	[ "$#" -eq 2 ] || wrongArgCount "$@"
-	clear
-	echo -ne "${HIGHLIGHT}Loading...${C0}"
-	code=$(getHttpResponseStatus "${2}")
-	case "${code}" in
-		200|302|400|404|405) play "${1}" "${2}" ;;
-		*) informUnavailability "${1}" "${2}" "${code}" ;;
-	esac
+playStream() { # name url
+  local code
+  [ "$#" -eq 2 ] || wrongArgCount "$@"
+  clear
+  echo -ne "${HIGHLIGHT}Loading...${C0}"
+  code=$(getHttpResponseStatus "${2}")
+  case "${code}" in
+    200|302|400|404|405)
+      saveLastPlayedStream "${1}" "${2}"
+      play "${1}" "${2}"
+      mainMenu
+      ;;
+    *)
+      informUnavailability "${1}" "${2}" "${code}"
+      ;;
+  esac
 }
 
 print () { # line
@@ -651,14 +657,17 @@ saveSettings () {
 	[ $? -eq 0 ] && echo -ne "Settings saved. "
 }
 
-start () {
-	# execute in appropriate order...
-	ensureCfg
-	log ">>> ${USER} started on $(date '+%a %d-%m-%Y %T')"
-	ensureInternet
-	clearMsg
-	echo -e "${BBG}"
-	mainMenu
+start() {
+  ensureCfg
+  log ">>> ${USER} started on $(date '+%a %d-%m-%Y %T')"
+  ensureInternet
+  clearMsg
+  echo -e "${BBG}"
+  if [ "${RESUME}" == true ]; then
+    loadLastPlayedStream
+  else
+    mainMenu
+  fi
 }
 
 streamMenu () { # action
@@ -731,6 +740,20 @@ wrongArgCount () { # args...
 	fatal "Wrong number ($#) of arguments {$@} in ${FUNCNAME[1]}!"
 }
 
+saveLastPlayedStream() { # name url
+  echo "${1},${2}" > "${LAST_PLAYED_FILE}"
+}
+
+loadLastPlayedStream() {
+  if [ -f "${LAST_PLAYED_FILE}" ]; then
+    IFS=, read -r name url < "${LAST_PLAYED_FILE}"
+    playStream "${name}" "${url}"
+  else
+    fatal "No last played stream found!"
+  fi
+}
+
+
 ### App info
 readonly APP_NAME="tau Player"
 readonly COPYRIGHT="Copyright 2024 J. Järvenpää <jarvenja@gmail.com>"
@@ -755,14 +778,16 @@ readonly BGR="\u2261"
 readonly DASH="\u2500"
 readonly ESC=$(printf "\u1b")
 ### Constant strings
+readonly CONFIG_DIR="${HOME}/.config/tauplayer"
 readonly COLLECTION_DIR="./collections"
+readonly LAST_PLAYED_FILE="${CONFIG_DIR}/last_played_stream.cvs"
 readonly COLLECTION1="favorites"
 readonly FILENAME_CHAR="[a-zA-Z0-9\-]"
 readonly GG="https://www.google.com"
 readonly LOG="./tauplayer.log"
 readonly PLAYLIST="PLAYLIST;" # placeholder key
 ### Settings
-readonly SETTINGS="./tauplayer.cvs"
+readonly SETTINGS="${CONFIG_DIR}/tauplayer.cvs"
 declare -i -r CACHE_MIN=80
 declare -i -r CACHE_SIZE=16384
 LOGGING=false
@@ -772,8 +797,15 @@ USE_CACHE=true
 set -uo pipefail
 ensureBash
 pushd "${PWD}" >/dev/null
+RESUME=false
 case "$#" in
-	0) start ;;
-	1) [ "${1}" == "--help" ] && usage || invalidArg "${1}" ;;
-	*) wrongArgCount "${@}" ;;
+  0) start ;;
+  1)
+    case "${1}" in
+      --help) usage ;;
+      --resume) RESUME=true; start ;;
+      *) invalidArg "${1}" ;;
+    esac
+    ;;
+  *) wrongArgCount "${@}" ;;
 esac
